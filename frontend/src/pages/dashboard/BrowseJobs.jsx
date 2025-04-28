@@ -1,9 +1,12 @@
-import React from 'react'
+import React from "react";
+import BrowseJobs from "../../components/BrowseJobs.jsx";
 
-const BrowseJobs = () => {
+const BrowseJobsPage = () => {
   return (
-    <div>BrowseJobs</div>
-  )
-}
+    <div className="pt-4">
+      <BrowseJobs />
+    </div>
+  );
+};
 
-export default BrowseJobs
+export default BrowseJobsPage;

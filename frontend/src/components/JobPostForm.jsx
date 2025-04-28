@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// 📍 Fix Leaflet marker icon path issue
+// Fix Leaflet marker icon path
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
@@ -15,6 +15,14 @@ L.Icon.Default.mergeOptions({
 });
 
 const JobPostForm = () => {
+  const jobOptions = [
+    "Pet Walker",
+    "Pet Groomer",
+    "Pet Sitter",
+    "Vet Assistant",
+    "Other",
+  ];
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -23,6 +31,7 @@ const JobPostForm = () => {
   });
 
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [coords, setCoords] = useState(null);
@@ -107,15 +116,42 @@ const JobPostForm = () => {
   };
 
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    setImage(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const validateForm = () => {
+    if (!formData.title || formData.title.trim() === "") {
+      toast.error("Please enter a valid job title.");
+      return false;
+    }
+    if (!formData.description || formData.description.trim() === "") {
+      toast.error("Please enter a job description.");
+      return false;
+    }
+    if (!formData.location || formData.location.trim() === "") {
+      toast.error("Please enter or select a location.");
+      return false;
+    }
+    if (!formData.pay || isNaN(formData.pay) || Number(formData.pay) <= 0) {
+      toast.error("Please enter a valid pay amount.");
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) return;
     setUploading(true);
 
     try {
-      // 1. Submit job data without image
       const jobRes = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/jobs/post`,
         {
@@ -128,10 +164,9 @@ const JobPostForm = () => {
         { withCredentials: true }
       );
 
-      const jobId = jobRes.data._id; 
-      let imageUrl = "";
+      const jobId = jobRes.data.job._id;
+    
 
-      // 2. Upload image to Cloudinary if selected
       if (image) {
         const cloudinaryData = new FormData();
         cloudinaryData.append("file", image);
@@ -144,9 +179,8 @@ const JobPostForm = () => {
           cloudinaryData
         );
 
-        imageUrl = cloudRes.data.secure_url;
+        const imageUrl = cloudRes.data.secure_url;
 
-        // 3. Update job with image URL
         await axios.put(
           `${import.meta.env.VITE_BACKEND_URL}/api/jobs/update-image/${jobId}`,
           { image: imageUrl },
@@ -157,6 +191,7 @@ const JobPostForm = () => {
       toast.success("Job posted successfully!");
       setFormData({ title: "", description: "", location: "", pay: "" });
       setImage(null);
+      setImagePreview(null);
       setCoords(null);
     } catch (error) {
       toast.error(
@@ -167,23 +202,18 @@ const JobPostForm = () => {
     }
   };
 
+  const isCustomTitle = formData.title && !jobOptions.includes(formData.title);
+
   return (
     <div className="max-w-md mx-auto p-4 bg-white rounded shadow-md">
       <h2 className="text-xl font-bold mb-4">Post a New Job</h2>
 
       <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Job Title with Dropdown + Other Option */}
+        {/* Job Title Dropdown + Optional Custom Title */}
         <div>
           <select
             value={
-              [
-                "Pet Walker",
-                "Pet Groomer",
-                "Pet Sitter",
-                "Vet Assistant",
-              ].includes(formData.title)
-                ? formData.title
-                : "Other"
+              jobOptions.includes(formData.title) ? formData.title : "Other"
             }
             onChange={(e) => {
               const value = e.target.value;
@@ -198,11 +228,11 @@ const JobPostForm = () => {
             <option value="" disabled>
               Select Job Title
             </option>
-            <option value="Pet Walker">Pet Walker</option>
-            <option value="Pet Groomer">Pet Groomer</option>
-            <option value="Pet Sitter">Pet Sitter</option>
-            <option value="Vet Assistant">Vet Assistant</option>
-            <option value="Other">Other</option>
+            {jobOptions.map((title) => (
+              <option key={title} value={title}>
+                {title}
+              </option>
+            ))}
           </select>
 
           {formData.title === "" && (
@@ -218,6 +248,7 @@ const JobPostForm = () => {
           )}
         </div>
 
+        {/* Description */}
         <textarea
           name="description"
           placeholder="Job Description"
@@ -227,6 +258,7 @@ const JobPostForm = () => {
           className="w-full p-2 border rounded"
         />
 
+        {/* Location Input + Suggestions */}
         <div className="relative">
           <input
             type="text"
@@ -259,6 +291,7 @@ const JobPostForm = () => {
           </button>
         </div>
 
+        {/* Map */}
         {coords && (
           <div className="mt-3 h-40 rounded-md overflow-hidden border border-gray-300">
             <MapContainer
@@ -281,6 +314,7 @@ const JobPostForm = () => {
           </div>
         )}
 
+        {/* Pay */}
         <input
           type="number"
           name="pay"
@@ -291,6 +325,7 @@ const JobPostForm = () => {
           className="w-full p-2 border rounded"
         />
 
+        {/* Image Upload */}
         <input
           type="file"
           accept="image/*"
@@ -298,6 +333,20 @@ const JobPostForm = () => {
           className="w-full p-2 border rounded"
         />
 
+        {/* Image Preview */}
+        {imagePreview && (
+          <div className="flex items-start">
+            <div className="rounded overflow-hidden mr-3">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-24 h-24 object-contain"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Submit */}
         <button
           type="submit"
           className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"

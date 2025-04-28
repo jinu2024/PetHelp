@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSetRecoilState, useRecoilValue } from "recoil";
 import axios from "axios";
-import { myJobsState } from "../recoil/jobAtom";
+import { myJobsState } from "../recoil/MyJobAtom";
 
 const useMyJobListings = () => {
   const setMyJobs = useSetRecoilState(myJobsState);

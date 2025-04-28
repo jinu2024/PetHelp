@@ -14,6 +14,8 @@ import BrowseJobs from "./pages/dashboard/BrowseJobs";
 import MyApplications from "./pages/dashboard/MyApplications";
 import Messages from "./pages/dashboard/Messages";
 import Profile from "./pages/dashboard/Profile";
+import JobDetailsPage from "./pages/JobDetailsPage";
+
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -51,6 +53,7 @@ function App() {
           <Route path="my-applications" element={<MyApplications />} />
           <Route path="messages" element={<Messages />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="job/:id" element={<JobDetailsPage />} />
         </Route>
       </Routes>
 

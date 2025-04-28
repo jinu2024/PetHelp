@@ -12,7 +12,7 @@ const applyForJob = async (req, res) => {
 
     const existing = await Application.findOne({
       job: jobId,
-      walker: req.user.userId,
+      walker: req.user._id,
     });
 
     if (existing) {
@@ -23,7 +23,7 @@ const applyForJob = async (req, res) => {
 
     const newApplication = new Application({
       job: jobId,
-      walker: req.user.userId,
+      walker: req.user._id, // ✅ Fixed here too
       message,
     });
 
@@ -44,6 +44,7 @@ const applyForJob = async (req, res) => {
 };
 
 
+
 // Get applications for a specific walker
 const getMyApplications = async (req, res) => {
   try {
@@ -54,7 +55,7 @@ const getMyApplications = async (req, res) => {
     }
 
     const applications = await Application.find({
-      walker: req.user.userId,
+      walker: req.user._id,
     }).populate("job", "title location");
     res.json(applications);
   } catch (error) {
@@ -82,7 +83,7 @@ const updateApplicationStatus = async (req, res) => {
     if (!application)
       return res.status(404).json({ message: "Application not found" });
 
-    if (application.job.owner.toString() !== req.user.userId) {
+    if (application.job.owner.toString() !== req.user._id) {
       return res
         .status(403)
         .json({ message: "You can only update applications for your jobs" });
@@ -96,5 +97,7 @@ const updateApplicationStatus = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+
 
 module.exports = { applyForJob, getMyApplications, updateApplicationStatus };

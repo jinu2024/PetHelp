@@ -42,7 +42,7 @@ const Navbar = () => {
   return (
     <>
       {/* Navbar */}
-      <div className="bg-blue-600 text-white px-4 py-4 flex justify-between items-center shadow-md">
+      <div className="fixed top-0 left-0 w-full h-16 bg-blue-600 text-white px-4 py-4 flex justify-between items-center shadow-md z-50">
         {/* Left: Hamburger + Logo */}
         <div className="flex items-center gap-4">
           <button
@@ -89,10 +89,18 @@ const Navbar = () => {
             className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
-          <div className="fixed z-50 top-0 left-0 w-64 h-full bg-white shadow-md md:hidden transition-transform transform translate-x-0">
+          <div
+            className="fixed z-50 top-0 left-0 w-64 h-full bg-white shadow-md md:hidden transition-transform transform duration-300"
+            style={{
+              transform: isSidebarOpen ? "translateX(0)" : "translateX(-100%)",
+            }}
+          >
             {/* Close button */}
             <div className="flex justify-end p-4">
-              <button onClick={() => setIsSidebarOpen(false)} className="text-xl">
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="text-xl text-gray-600 hover:text-black"
+              >
                 <FaTimes />
               </button>
             </div>

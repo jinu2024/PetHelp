@@ -22,27 +22,15 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
 
   const ownerLinks = [
     { to: "/dashboard/post-job", label: "Post a Job", icon: <FaPlus /> },
-    {
-      to: "/dashboard/my-jobs",
-      label: "My Job Listings",
-      icon: <FaClipboardList />,
-    },
-    {
-      to: "/dashboard/applications",
-      label: "Applications",
-      icon: <FaBriefcase />,
-    },
+    { to: "/dashboard/my-jobs", label: "My Job Listings", icon: <FaClipboardList /> },
+    { to: "/dashboard/applications", label: "Applications", icon: <FaBriefcase /> },
     { to: "/dashboard/messages", label: "Messages", icon: <FaEnvelope /> },
     { to: "/dashboard/profile", label: "Profile", icon: <FaUser /> },
   ];
 
   const walkerLinks = [
     { to: "/dashboard/browse-jobs", label: "Browse Jobs", icon: <FaSearch /> },
-    {
-      to: "/dashboard/my-applications",
-      label: "My Applications",
-      icon: <FaClipboardList />,
-    },
+    { to: "/dashboard/my-applications", label: "My Applications", icon: <FaClipboardList /> },
     { to: "/dashboard/messages", label: "Messages", icon: <FaEnvelope /> },
     { to: "/dashboard/profile", label: "Profile", icon: <FaUser /> },
   ];
@@ -58,22 +46,28 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
           onClick={closeSidebar}
         />
       )}
-  
+
       {/* Sidebar */}
       <div
-        className={`fixed md:static left-0 bg-white shadow-lg z-50 md:z-auto
+        className={`fixed left-0 bg-white shadow-lg z-50
           transition-transform duration-300 w-64 p-4
-          ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0
-          top-16 md:top-0 md:block`}
-        style={{ height: "calc(100vh - 4rem)" }}
+          ${isOpen ? "translate-x-0" : "-translate-x-full"} 
+          md:translate-x-0 md:block`}
+        style={{ 
+          top: "4rem", // Matches typical navbar height (adjust if your Navbar is different)
+          height: "calc(100vh - 4rem)" // Full height minus navbar
+        }}
       >
         {/* Close icon for mobile */}
-        <div className="md:hidden flex justify-end mb-4">
-          <button onClick={closeSidebar} className="text-gray-600 hover:text-black text-xl">
+        <div className="md:hidden flex justify-end mb-4 pt-4">
+          <button 
+            onClick={closeSidebar} 
+            className="text-gray-600 hover:text-black text-xl"
+          >
             <FaTimes />
           </button>
         </div>
-  
+
         <ul className="space-y-2">
           {links.map((link) => (
             <li key={link.to}>
@@ -95,7 +89,6 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
       </div>
     </>
   );
-  
 };
 
 export default Sidebar;

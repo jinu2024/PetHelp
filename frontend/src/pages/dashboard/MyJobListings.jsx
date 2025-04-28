@@ -1,10 +1,9 @@
 import React from "react";
-import useMyJobListings from "../../hooks/useMyjobListings";
+import useMyJobListings from "../../hooks/useMyJobListings";
 import JobCard from "../../components/JobCard";
 
 const MyJobListings = () => {
   const { jobs, loading } = useMyJobListings();
- 
 
   if (loading) return <p>Loading your jobs...</p>;
 
@@ -18,7 +17,7 @@ const MyJobListings = () => {
       {jobs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {jobs.map((job) => (
-            <JobCard key={job._id} job={job} />
+            <JobCard key={job._id} job={job} role="owner" />
           ))}
         </div>
       ) : (

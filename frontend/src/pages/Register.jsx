@@ -16,22 +16,83 @@ function Register() {
     password: "",
     role: "owner",
     location: "",
+    lat: null,
+    lng: null,
   });
 
-  const [showPassword, setShowPassword] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    if (user) navigate("/dashboard");
+    if (user.id) navigate("/dashboard");
   }, [user, navigate]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+    if (e.target.name === "location" && e.target.value.length > 2) {
+      fetchSuggestions(e.target.value);
+    }
+  };
+
+  const fetchSuggestions = async (query) => {
+    try {
+      const res = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+        params: {
+          q: query,
+          format: "json",
+          addressdetails: 1,
+          limit: 5,
+        },
+      });
+      setSuggestions(res.data);
+    } catch (err) {
+      console.error("Failed to fetch suggestions", err);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setFormData((prev) => ({
+      ...prev,
+      location: suggestion.display_name,
+      lat: parseFloat(suggestion.lat),
+      lng: parseFloat(suggestion.lon),
+    }));
+    setSuggestions([]);
+  };
+
+  const handleUseCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const res = await axios.get(`https://nominatim.openstreetmap.org/reverse`, {
+            params: {
+              lat: latitude,
+              lon: longitude,
+              format: "json",
+            },
+          });
+          setFormData((prev) => ({
+            ...prev,
+            location: res.data.display_name,
+            lat: latitude,
+            lng: longitude,
+          }));
+        } catch (err) {
+          toast.error("Failed to reverse geocode location.");
+        }
+      },
+      (error) => {
+        toast.error("Unable to get your current location.");
+      }
+    );
   };
 
   const validate = () => {
-    if (!formData.name || !formData.email || !formData.password) {
-      toast.error("Please fill all required fields.");
+    if (!formData.name || !formData.email || !formData.password || !formData.location || !formData.lat || !formData.lng) {
+      toast.error("Please fill all fields and choose a valid location.");
       return false;
     }
     return true;
@@ -43,9 +104,30 @@ function Register() {
 
     try {
       setLoading(true);
-      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, formData);
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        location: {
+          type: "Point",
+          coordinates: [formData.lng, formData.lat],
+          address: formData.location,
+        },
+      });
       toast.success("Registration successful!");
-      setUser(res.data.user);
+      setUser({
+        id: res.data.user.id,
+        name: res.data.user.name,
+        email: res.data.user.email,
+        role: res.data.user.role,
+        location: res.data.user.location,
+        profilePic: res.data.user.profilePic || "",
+        bio: res.data.user.bio || "",
+        rating: res.data.user.rating || 0,
+        loading: false,
+      });
+      console.log("Registered userAtom:", res.data.user);
       navigate("/dashboard");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
@@ -109,13 +191,37 @@ function Register() {
             <option value="walker">Pet Walker</option>
           </select>
 
-          <input
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-            name="location"
-            type="text"
-            placeholder="Location (optional)"
-            onChange={handleChange}
-          />
+          <div className="relative">
+            <input
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              name="location"
+              type="text"
+              placeholder="Search your location"
+              value={formData.location}
+              onChange={handleChange}
+            />
+            {suggestions.length > 0 && (
+              <ul className="absolute z-10 bg-white w-full border border-gray-200 max-h-40 overflow-y-auto shadow-md rounded-md mt-1">
+                {suggestions.map((suggestion, index) => (
+                  <li
+                    key={index}
+                    className="px-4 py-2 hover:bg-purple-100 cursor-pointer text-sm"
+                    onClick={() => handleSuggestionClick(suggestion)}
+                  >
+                    {suggestion.display_name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="text-sm text-purple-600 hover:underline"
+            onClick={handleUseCurrentLocation}
+          >
+            📍 Use Current Location
+          </button>
         </div>
 
         <button
