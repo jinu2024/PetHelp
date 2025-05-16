@@ -115,14 +115,25 @@ const updateProfile = async (req, res) => {
 
 const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("name profilePic");
+    // Fetch user without field restriction
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+    
+    // Transform response to match userAtom format
     res.status(200).json({
-      _id: user._id,
-      name: user.name,
+      id: user._id.toString(), // Convert ObjectId to string and rename to id
+      name: user.name || "",
+      email: user.email || "",
+      role: user.role || "",
+      location: {
+        coordinates: user.location?.coordinates || [0, 0],
+        address: user.location?.address || ""
+      },
       profilePic: user.profilePic || "",
+      bio: user.bio || "",
+      rating: user.rating || 0
     });
   } catch (error) {
     console.error("Get User Error:", error);

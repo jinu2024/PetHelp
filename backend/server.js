@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 const http = require("http");
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
-const { sendMessage } = require("./controllers/socketController"); // Import socketController
+const { sendMessage } = require("./controllers/socketController");
 
 const authRoutes = require("./routes/authRoutes");
 const jobRoutes = require("./routes/jobRoutes");
@@ -14,16 +14,9 @@ const applicationRoutes = require("./routes/applicationRoutes");
 const userRoutes = require("./routes/userRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 
-// Initialize express app
 const app = express();
-
-// Create HTTP server
 const server = http.createServer(app);
 
-// In-memory store for connected users
-const connectedUsers = new Map(); // { userId: { socketId, lastSeen } }
-
-// Setup Socket.IO server
 const io = new Server(server, {
   cors: {
     origin: process.env.CLIENT_URL || "http://localhost:5173",
@@ -32,10 +25,12 @@ const io = new Server(server, {
   },
 });
 
-// Socket.IO Authentication
+app.set("io", io); // Share io instance
+
+const connectedUsers = new Map();
+
 io.use((socket, next) => {
   const cookie = socket.handshake.headers.cookie;
-  console.log("Socket auth attempt:", cookie); // Add logging
   if (!cookie) return next(new Error("Authentication error: No cookie"));
   const cookies = {};
   cookie.split(";").forEach((c) => {
@@ -54,12 +49,10 @@ io.use((socket, next) => {
   }
 });
 
-// Socket.IO Events
 io.on("connection", (socket) => {
   console.log(`✅ User connected: ${socket.user._id} (Socket ID: ${socket.id})`);
   socket.join(`user:${socket.user._id}`);
 
-  // Update connected users
   connectedUsers.set(socket.user._id, { socketId: socket.id, lastSeen: null });
   io.emit("userStatus", {
     userId: socket.user._id,
@@ -69,7 +62,7 @@ io.on("connection", (socket) => {
 
   socket.on("sendMessage", (data) => {
     console.log(`📨 sendMessage received from ${socket.user._id}:`, data);
-    sendMessage(io, socket, data); // Use socketController
+    sendMessage(io, socket, data);
   });
 
   socket.on("disconnect", () => {
@@ -81,7 +74,6 @@ io.on("connection", (socket) => {
       isOnline: false,
       lastSeen,
     });
-    // Cleanup after 1 hour
     setTimeout(() => {
       if (connectedUsers.get(socket.user._id)?.socketId === null) {
         connectedUsers.delete(socket.user._id);
@@ -90,7 +82,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Middleware
 app.use(cookieParser());
 app.use(express.json());
 app.use(
@@ -100,22 +91,18 @@ app.use(
   })
 );
 
-// Provide connectedUsers to routes
 app.use((req, res, next) => {
   req.connectedUsers = connectedUsers;
   next();
 });
 
-// Connect to MongoDB
 connectDB();
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/messages", messageRoutes);
 
-// Start the server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

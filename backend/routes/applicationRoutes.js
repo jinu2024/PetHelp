@@ -1,11 +1,10 @@
 const express = require("express");
-const { applyForJob, getMyApplications, updateApplicationStatus } = require("../controllers/applicationController");
+const { applyForJob, cancelAssignment } = require("../controllers/applicationController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 router.post("/apply", authMiddleware, applyForJob);
-router.get("/my-applications", authMiddleware, getMyApplications);
-router.patch("/update-status", authMiddleware, updateApplicationStatus);
+router.post("/cancel", authMiddleware, cancelAssignment);
 
 module.exports = router;

@@ -3,7 +3,7 @@ import JobPostForm from '../../components/JobPostForm';
 
 const PostJobPage = () => {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="mt-5 min-h-screen bg-gray-100">
       <JobPostForm />
     </div>
   );

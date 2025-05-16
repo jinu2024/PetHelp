@@ -18,6 +18,8 @@ function Register() {
     location: "",
     lat: null,
     lng: null,
+    profilePic: "", // Added to match User model
+    bio: "", // Added to match User model
   });
 
   const [suggestions, setSuggestions] = useState([]);
@@ -25,7 +27,7 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    if (user.id) navigate("/dashboard");
+    if (user && user.id) navigate("/dashboard"); // Added null check for user
   }, [user, navigate]);
 
   const handleChange = (e) => {
@@ -49,6 +51,7 @@ function Register() {
       setSuggestions(res.data);
     } catch (err) {
       console.error("Failed to fetch suggestions", err);
+      toast.error("Failed to fetch location suggestions.");
     }
   };
 
@@ -111,13 +114,15 @@ function Register() {
         role: formData.role,
         location: {
           type: "Point",
-          coordinates: [formData.lng, formData.lat],
+          coordinates: [formData.lng, formData.lat], // Matches User model
           address: formData.location,
         },
+        profilePic: formData.profilePic, // Added
+        bio: formData.bio, // Added
       });
       toast.success("Registration successful!");
       setUser({
-        id: res.data.user.id,
+        id: res.data.user._id, // Use _id from MongoDB
         name: res.data.user.name,
         email: res.data.user.email,
         role: res.data.user.role,

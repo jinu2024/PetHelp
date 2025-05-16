@@ -23,14 +23,14 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
   const ownerLinks = [
     { to: "/dashboard/post-job", label: "Post a Job", icon: <FaPlus /> },
     { to: "/dashboard/my-jobs", label: "My Job Listings", icon: <FaClipboardList /> },
-    { to: "/dashboard/applications", label: "Applications", icon: <FaBriefcase /> },
+    { to: "/dashboard/assigned-jobs", label: "Assigned Jobs", icon: <FaBriefcase /> },
     { to: "/dashboard/messages", label: "Messages", icon: <FaEnvelope /> },
     { to: "/dashboard/profile", label: "Profile", icon: <FaUser /> },
   ];
 
   const walkerLinks = [
     { to: "/dashboard/browse-jobs", label: "Browse Jobs", icon: <FaSearch /> },
-    { to: "/dashboard/my-applications", label: "My Applications", icon: <FaClipboardList /> },
+    { to: "/dashboard/current-jobs", label: "Current Jobs", icon: <FaClipboardList /> },
     { to: "/dashboard/messages", label: "Messages", icon: <FaEnvelope /> },
     { to: "/dashboard/profile", label: "Profile", icon: <FaUser /> },
   ];

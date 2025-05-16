@@ -277,7 +277,7 @@ function Messages() {
   if (!user.id) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-purple-200 px-2 sm:px-4">
-        <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 text-center transform transition-all hover:scale-105">
+        <div className=" h-screen bg-white rounded-xl shadow-lg p-6 sm:p-8 text-center transform transition-all hover:scale-105">
           <p className="text-gray-600 mb-4">Please log in to view messages.</p>
           <Link
             to="/login"
@@ -291,8 +291,8 @@ function Messages() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 to-purple-200 px-2 sm:px-4 py-6 flex flex-col">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-6 w-full">
+    <div className="h-screen bg-gradient-to-br from-pink-100 to-purple-200 px-2 sm:px-4 py-6 flex flex-col">
+      <div className="h-screen max-w-4xl mx-auto mb-4 bg-white rounded-xl shadow-lg p-4 sm:p-6 w-full">
         {selectedConversation || recipientUser ? (
           <Chat
             conversation={selectedConversation}

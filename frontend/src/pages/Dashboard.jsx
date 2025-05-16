@@ -1,20 +1,28 @@
-import React from "react";
-import Sidebar from "../components/Sidebar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { userAtom } from "../recoil/userAtom";
+import { useEffect } from "react";
 
 const DashboardLayout = () => {
   const user = useRecoilValue(userAtom);
+  const location = useLocation();
 
-  if (!user) return null; // or show a loading spinner / redirect
+  // Debug current URL
+  useEffect(() => {
+    console.log("DashboardLayout - Current URL:", location.pathname);
+  }, [location.pathname]);
+
+  // Redirect to login if not authenticated
+  if (!user.id) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
   return (
-    <div className="flex">
-      <Sidebar /> {/* No need to pass role anymore */}
-      <div className="flex-1 p-6 bg-gray-100 min-h-screen">
+    <div className="min-h-screen bg-gray-100">
+      {/* Sidebar, Header, etc. */}
+      <main className="p-4 sm:p-6">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 };
