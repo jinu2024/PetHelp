@@ -1,10 +1,12 @@
-import { useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { userAtom } from "./recoil/userAtom";
 import axios from "axios";
 import io from "socket.io-client";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+
+import { Circles } from "react-loader-spinner";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -16,15 +18,16 @@ import CurrentJobs from "./pages/dashboard/CurrentJobs";
 import Messages from "./pages/dashboard/Messages";
 import Profile from "./pages/dashboard/Profile";
 import JobDetailsPage from "./pages/JobDetailsPage";
-
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import AssignedJobs from "./pages/dashboard/AssignedJobs";
+
+import ProtectedRoute from "./protectedRoute";
+
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const [user, setUser] = useRecoilState(userAtom);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Validate session
   useEffect(() => {
     const validateSession = async () => {
       try {
@@ -39,13 +42,14 @@ function App() {
         setUser(null);
         localStorage.removeItem("user");
         console.error("App.jsx - Session validation error:", err.message);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     validateSession();
   }, [setUser]);
 
-  // Global Socket.io listener for notifications
   useEffect(() => {
     let socket;
     if (user?.id) {
@@ -79,12 +83,30 @@ function App() {
     }
   }, [user?.id, user?.role]);
 
+  // Loader Spinner
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Circles height="80" width="80" color="#4fa94d" ariaLabel="loading" />
+      </div>
+    );
+  }
+
   return (
     <>
       <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<DashboardLayout />}>
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="profile" />} />
           <Route path="post-job" element={<PostJob />} />
           <Route path="my-jobs" element={<MyJobListings />} />
           <Route path="assigned-jobs" element={<AssignedJobs />} />
