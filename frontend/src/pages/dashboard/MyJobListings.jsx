@@ -1,5 +1,5 @@
 import React from "react";
-import useMyJobListings from "../../hooks/useMyJobListings";
+import useMyJobListings from "../../hooks/useMyjobListings";
 import JobCard from "../../components/JobCard";
 
 const MyJobListings = () => {
